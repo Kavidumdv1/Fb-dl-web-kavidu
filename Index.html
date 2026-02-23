@@ -1,280 +1,361 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KAVIDU INDUWARA – Facebook Downloader</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KAVIDU INDUWARA – Facebook Downloader</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #05070a;
+            --panel: rgba(18, 24, 32, 0.8);
+            --border: #1f2937;
+            --accent: #00f2ff; /* Cyan glowing color */
+            --accent-soft: #0088ff;
+            --text: #ffffff;
+            --muted: #9ca3af;
+            --error: #ef4444;
+            --facebook-blue: #1877F2;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 16px;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-<!-- Fonts & Icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+        /* Snow Effect Canvas */
+        #snow-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .app {
+            width: 100%;
+            max-width: 520px;
+            z-index: 1;
+            position: relative;
+        }
+        
+        /* Header & Neon Glow */
+        .header {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 18px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.1);
+            animation: borderGlow 3s infinite alternate;
+        }
 
-<style>
-    :root {
-        --bg: #05070a;
-        --panel: rgba(18, 24, 32, 0.8);
-        --border: #1f2937;
-        --accent: #00f2ff;
-        --accent-soft: #0088ff;
-        --text: #ffffff;
-        --muted: #9ca3af;
-        --error: #ef4444;
-    }
+        @keyframes borderGlow {
+            from { border-color: var(--border); }
+            to { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 242, 255, 0.3); }
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        .header span {
+            color: var(--accent);
+            text-shadow: 0 0 10px var(--accent);
+        }
+        
+        .header p {
+            margin-top: 8px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+        
+        .channel-link {
+            font-size: 13px;
+            color: #fff;
+            background: linear-gradient(45deg, #25D366, #128C7E);
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 50px;
+            display: inline-block;
+            margin-top: 15px;
+            font-weight: 600;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
 
-    * { box-sizing: border-box; margin:0; padding:0; }
+        .channel-link:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(37, 211, 102, 0.5);
+        }
+        
+        /* Search Input */
+        .search {
+            margin-top: 18px;
+            position: relative;
+        }
+        
+        .search i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent);
+        }
+        
+        .search input {
+            width: 100%;
+            padding: 18px 18px 18px 46px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            color: var(--text);
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        
+        .search input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+        }
+        
+        /* Buttons Styling */
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 18px;
+        }
+        
+        .btn {
+            padding: 15px;
+            border-radius: 12px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+        
+        .btn.primary {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: inset 0 0 10px rgba(0, 242, 255, 0.1);
+        }
 
-    body {
-        font-family: 'Inter', system-ui, sans-serif;
-        background: var(--bg);
-        color: var(--text);
-        min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        padding: 16px;
-        overflow-x: hidden;
-        position: relative;
-    }
+        .btn.primary:hover {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 0 20px var(--accent);
+        }
+        
+        .btn:active {
+            transform: scale(.95);
+        }
+        
+        /* Results Section */
+        .result {
+            display: none;
+            margin-top: 20px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 20px;
+            backdrop-filter: blur(15px);
+        }
 
-    /* Background Video */
-    #bg-video {
-        position: fixed;
-        top:0;
-        left:0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        z-index: -1;
-    }
+        .video-title {
+            color: var(--accent);
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(0, 242, 255, 0.3);
+        }
 
-    .app {
-        width: 100%;
-        max-width: 520px;
-        z-index: 1;
-        position: relative;
-    }
+        .download-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-soft));
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        
+        .footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
 
-    /* Header & Neon Glow */
-    .header {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 20px;
-        padding: 25px;
-        text-align: center;
-        margin-bottom: 18px;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 0 20px rgba(0, 242, 255, 0.1);
-        animation: borderGlow 3s infinite alternate;
-    }
+        /* Loading Spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 242, 255, 0.1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
 
-    @keyframes borderGlow {
-        from { border-color: var(--border); }
-        to { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 242, 255, 0.3); }
-    }
-
-    .header h1 { font-size:24px; font-weight:800; letter-spacing:1px; text-transform:uppercase; }
-    .header span { color: var(--accent); text-shadow: 0 0 10px var(--accent); }
-    .header p { margin-top:8px; font-size:13px; color:var(--muted); }
-
-    .channel-link {
-        font-size:13px;
-        color:#fff;
-        background: linear-gradient(45deg, #25D366, #128C7E);
-        text-decoration:none;
-        padding:10px 18px;
-        border-radius:50px;
-        display:inline-block;
-        margin-top:15px;
-        font-weight:600;
-        transition:0.3s;
-        box-shadow:0 4px 15px rgba(37,211,102,0.3);
-    }
-    .channel-link:hover {
-        transform: scale(1.05);
-        box-shadow:0 0 20px rgba(37,211,102,0.5);
-    }
-
-    /* Search Input */
-    .search { margin-top:18px; position:relative; }
-    .search i { position:absolute; left:14px; top:50%; transform:translateY(-50%); color: var(--accent); }
-    .search input {
-        width:100%;
-        padding:18px 18px 18px 46px;
-        background: var(--panel);
-        border:1px solid var(--border);
-        border-radius:15px;
-        color: var(--text);
-        font-size:15px;
-        outline:none;
-        transition:0.3s;
-        backdrop-filter: blur(10px);
-    }
-    .search input:focus {
-        border-color: var(--accent);
-        box-shadow:0 0 15px rgba(0,242,255,0.2);
-    }
-
-    /* Buttons */
-    .actions {
-        display:grid;
-        grid-template-columns:1fr 1fr;
-        gap:12px;
-        margin-top:18px;
-    }
-    .btn {
-        padding:15px;
-        border-radius:12px;
-        background: var(--panel);
-        border:1px solid var(--border);
-        color: var(--text);
-        font-weight:700;
-        cursor:pointer;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        gap:8px;
-        transition:0.3s;
-    }
-    .btn.primary {
-        border-color: var(--accent);
-        color: var(--accent);
-        box-shadow: inset 0 0 10px rgba(0,242,255,0.1);
-    }
-    .btn.primary:hover {
-        background: var(--accent);
-        color: #000;
-        box-shadow:0 0 20px var(--accent);
-    }
-    .btn:active { transform: scale(.95); }
-
-    /* Results */
-    .result {
-        display:none;
-        margin-top:20px;
-        background: var(--panel);
-        border:1px solid var(--border);
-        border-radius:18px;
-        padding:20px;
-        backdrop-filter: blur(15px);
-    }
-    .video-title {
-        color: var(--accent);
-        font-weight:bold;
-        text-shadow: 0 0 5px rgba(0,242,255,0.3);
-    }
-    .download-btn {
-        width:100%;
-        padding:14px;
-        background: linear-gradient(135deg, var(--accent), var(--accent-soft));
-        border:none;
-        border-radius:10px;
-        color:#000;
-        font-weight:800;
-        cursor:pointer;
-        text-transform:uppercase;
-    }
-
-    .footer {
-        margin-top:25px;
-        text-align:center;
-        font-size:12px;
-        color:var(--muted);
-        letter-spacing:1px;
-    }
-
-    .spinner {
-        width:40px;
-        height:40px;
-        border:4px solid rgba(0,242,255,0.1);
-        border-top-color: var(--accent);
-        border-radius:50%;
-        animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-</style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
 </head>
 <body>
+    <canvas id="snow-canvas"></canvas>
 
-<!-- Background Video -->
-<video autoplay muted loop playsinline id="bg-video">
-    <source src="https://files.catbox.moe/28977j.mp4" type="video/mp4">
-</video>
-
-<div class="app">
-    <div class="header">
-        <h1><span>KAVIDU</span> INDUWARA</h1>
-        <p>Facebook Video Downloader</p>
-        <a class="channel-link" href="https://whatsapp.com/channel/0029Vb7MmDr5vKAF7F8kTD3J" target="_blank">
-            <i class="fab fa-whatsapp"></i> Join WEB Channel
-        </a>
+    <div class="app">
+        <div class="header">
+            <h1><span>KAVIDU</span> INDUWARA</h1>
+            <p>Facebook  Video Downloader</p>
+            <a class="channel-link" href="https://whatsapp.com/channel/0029Vb7MmDr5vKAF7F8kTD3J" target="_blank">
+                <i class="whatsapp"></i> Join whatsapp Channel
+            </a>
+        </div>
+        
+        <div class="search">
+            <i class="fab fa-facebook"></i>
+            <input type="text" id="urlInput" placeholder="Paste Facebook video link here...">
+        </div>
+        
+        <div class="actions">
+            <button class="btn primary" onclick="downloadVideo()">
+                <i class="fas fa-bolt"></i> GET VIDEO
+            </button>
+            <button class="btn" onclick="resetUI()">
+                <i class="fas fa-redo"></i> CLEAR
+            </button>
+        </div>
+        
+        <div class="result" id="result"></div>
+        
+        <div class="footer">© 2026 KAVIDU INDUWARA FB DL WEB •</div>
     </div>
 
-    <div class="search">
-        <i class="fab fa-facebook"></i>
-        <input type="text" id="urlInput" placeholder="Paste Facebook video link here...">
-    </div>
+    <script>
+        // --- Snow Effect Script ---
+        const canvas = document.getElementById('snow-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
 
-    <div class="actions">
-        <button class="btn primary" onclick="downloadVideo()">
-            <i class="fas fa-bolt"></i> GET VIDEO
-        </button>
-        <button class="btn" onclick="resetUI()">
-            <i class="fas fa-redo"></i> CLEAR
-        </button>
-    </div>
-
-    <div class="result" id="result"></div>
-
-    <div class="footer">© 2026 KAVIDU INDUWARA FB DL WEB •</div>
-</div>
-
-<script>
-const API_ENDPOINT = 'https://api.siputzx.my.id/api/d/facebook?url=';
-const urlInput = document.getElementById('urlInput');
-const resultDiv = document.getElementById('result');
-
-async function downloadVideo() {
-    const url = urlInput.value.trim();
-    if (!url) { alert('Please paste a link!'); return; }
-
-    resultDiv.style.display = 'block';
-    resultDiv.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center;"><div class="spinner"></div><p style="margin-top:10px">FB VIDEO SEARCH Fetching Data...</p></div>';
-
-    try {
-        const response = await fetch(`${API_ENDPOINT}${encodeURIComponent(url)}`);
-        const data = await response.json();
-
-        if (data.status && data.data) {
-            const video = data.data;
-            let downloadsHtml = '';
-            
-            video.downloads.forEach(dl => {
-                downloadsHtml += `
-                    <div style="margin-top:10px; border:1px solid var(--border); padding:10px; border-radius:10px;">
-                        <p style="font-size:12px; margin-bottom:5px;">Quality: ${dl.quality}</p>
-                        <button class="download-btn" onclick="window.open('${dl.url}')">DOWNLOAD ${dl.quality}</button>
-                    </div>
-                `;
-            });
-
-            resultDiv.innerHTML = `
-                <h3 class="video-title">${video.title || 'Video Found'}</h3>
-                <p style="font-size:12px; color:var(--muted); margin: 10px 0;">Duration: ${video.duration || 'N/A'}</p>
-                <img src="${video.thumbnail}" style="width:100%; border-radius:10px; margin-bottom:15px;">
-                ${downloadsHtml}
-            `;
-        } else {
-            resultDiv.innerHTML = '<p style="color:red;">Error: Video not found or link private.</p>';
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
         }
-    } catch (e) {
-        resultDiv.innerHTML = '<p style="color:red;">Server Busy! Try again later.</p>';
-    }
-}
+        window.addEventListener('resize', resize);
+        resize();
 
-function resetUI() {
-    urlInput.value = '';
-    resultDiv.style.display = 'none';
-}
-</script>
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speed = Math.random() * 1 + 0.5;
+                this.opacity = Math.random() * 0.5 + 0.3;
+            }
+            update() {
+                this.y += this.speed;
+                if (this.y > canvas.height) this.y = -10;
+            }
+            draw() {
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 100; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // --- Video Downloader Logic ---
+        const API_ENDPOINT = 'https://api.siputzx.my.id/api/d/facebook?url=';
+        const urlInput = document.getElementById('urlInput');
+        const resultDiv = document.getElementById('result');
+
+        async function downloadVideo() {
+            const url = urlInput.value.trim();
+            if (!url) { alert('Please paste a link!'); return; }
+
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center;"><div class="spinner"></div><p style="margin-top:10px">FB VIDEO SEARCH Fetching Data...</p></div>';
+
+            try {
+                const response = await fetch(`${API_ENDPOINT}${encodeURIComponent(url)}`);
+                const data = await response.json();
+
+                if (data.status && data.data) {
+                    const video = data.data;
+                    let downloadsHtml = '';
+                    
+                    video.downloads.forEach(dl => {
+                        downloadsHtml += `
+                            <div style="margin-top:10px; border:1px solid var(--border); padding:10px; border-radius:10px;">
+                                <p style="font-size:12px; margin-bottom:5px;">Quality: ${dl.quality}</p>
+                                <button class="download-btn" onclick="window.open('${dl.url}')">DOWNLOAD ${dl.quality}</button>
+                            </div>
+                        `;
+                    });
+
+                    resultDiv.innerHTML = `
+                        <h3 class="video-title">${video.title || 'Video Found'}</h3>
+                        <p style="font-size:12px; color:var(--muted); margin: 10px 0;">Duration: ${video.duration || 'N/A'}</p>
+                        <img src="${video.thumbnail}" style="width:100%; border-radius:10px; margin-bottom:15px;">
+                        ${downloadsHtml}
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<p style="color:red;">Error: Video not found or link private.</p>';
+                }
+            } catch (e) {
+                resultDiv.innerHTML = '<p style="color:red;">Server Busy! Try again later.</p>';
+            }
+        }
+
+        function resetUI() {
+            urlInput.value = '';
+            resultDiv.style.display = 'none';
+        }
+    </script>
 </body>
   </html>
